@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<head>
+<script src="https://momentjs.com/downloads/moment.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.js"></script>
+
+<style type="text/css">
+canvas { background-color : #eee;
+}
+</style>
+
+</head>
+<body>
+    <div style="width: 100%; height: 100%">
+        <canvas id="test"></canvas>
+      </div>
+    <script>
+
+      fetch('https://covidtracking.com/api/v1/states/daily.json')
+      .then((response) => {
+        return response.json();
+      })
+      .then((datas) => {
+        const stateData = datas.filter((data) => {
+          return data.state === 'NY';
+        })
+        complete_data_set = [];
+		index = 0;
+        stateData.forEach((data) => {
+            newDate = new String(data.date);
+            year = newDate.slice(0,4);
+            month = newDate.slice(4,6);
+            day = newDate.slice(6,8);
+
+            proper_date = new Date(month+"-"+day+"-"+year);
+            complete_data_set.push({
+                x:proper_date,
+                y:data.deathIncrease
+            });
+        });
+        var ctx = document.getElementById("test").getContext("2d");
+var scatterChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        datasets: [{
+            label: 'COVID NY Death Increases',
+            data: complete_data_set,
+        }]
+    },
+    options: {
+        tooltips: {
+        	callbacks: {
+          	title(datasets) {
+              var time = new Date(datasets[0].xLabel);
+            	return (time.getMonth() + 1) + '/' + time.getDate() + ' ' + time.getHours();
+            }
+          }
+        },
+        scales: {
+            xAxes: [
+              {
+                type: 'time',
+                position: 'bottom',
+                ticks: {
+                  callback(value) {
+                    var time = new Date(value);
+                    return (time.getMonth() + 1) + '/' + time.getDate() + ' ' + time.getHours();
+                  }
+                }
+              }
+            ]
+        }
+    }
+});
+
+      });
+    </script>
+</body>
+</html>
